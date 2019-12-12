@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <link rel="stylesheet" href="pokedex.css">
+    <title>Pokedex</title>
+<style>
+
+  #pokemons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  #click {
+    cursor: pointer;
+  }
+
+  .pokemon {
+    display: block;
+  }
+
+</style>
+
+  </head>
+  <body>
+    <div id='title'>
+      <div class='title-image' id='pokemon-title'></div>
+      <div class='title-image' id='pokedex-title'></div>
+    </div>
+    <div id='content'>
+      <div id='list'>
+        <div class='container-list'></div>
+      </div>
+      <div id='detail'>
+        <div id='details-first'>
+          <div class='height-weight' id='height'></div>
+          <div class='height-weight' id='weight'></div>
+        </div>
+        <div class='move-list-container'>
+          <div class = 'move-wrapper'></div>
+        </div>
+        <div id='setas'>
+            <div id='seta-esquerda'>a</div>
+            <div id='seta-direita'>b</div>
+          </div>
+        </div>
+      </div>
+  
+
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"
+      integrity="sha256-S1J4GVHHDMiirir9qsXWc8ZWw74PHHafpsHp5PXtjTs="
+      crossorigin="anonymous"
+    ></script>
+
+    <script>
+      let detailElement = document.getElementById("detail");
+	const pokemonsElement = document.querySelector("#pokemons");
+	const containerList = document.querySelector('.container-list');
+  let height = document.getElementById('height');
+  let weight = document.getElementById('weight');
+
+	function getUrl(url) {
+	  return fetch(url).then(a => a.json()).then(response => response)
+	}
+
+	let pokemons;
+	getUrl("https://pokeapi.co/api/v2/pokemon?offset=0&limit=151").then(response => {
+	  pokemons = response.results;
+
+	  for (let i = 0; i < pokemons.length; i++) {
+
+	    const currentPokemon = pokemons[i];
+	    const pokemonImageUrl = currentPokemon.url;
+      
+	    let pokemonList = document.createElement('div');
+	    let pokemonName = document.createElement('p');
+	    let pokemonImage = document.createElement('div');
+	    let dataUrl = document.createAttribute("dataUrl")
+	    dataUrl.value = (pokemonImageUrl);
+	    pokemonList.classList.add('pokemonButton');
+	    pokemonList.setAttributeNode(dataUrl);
+	    pokemonName.classList.add('pokemonName');
+	    pokemonName.innerHTML = `<span data-url="${pokemonImageUrl}">${currentPokemon.name}</span>`;
+
+	    getUrl(pokemonImageUrl).then((pokemon) => {
+	      pokemonImage.innerHTML = `<img src='${pokemon.sprites.front_default}' />`;
+	    })
+	    containerList.appendChild(pokemonList).appendChild(pokemonName);
+	    pokemonList.appendChild(pokemonImage);
+
+	    pokemonList.addEventListener('click', () => {
+	      const urlData = pokemonList.getAttribute("dataUrl");
+
+	      getUrl(urlData).then((detail) => {
+	        //detailElement.innerHTML = `weight:${detail.weight} height:${detail.height}`;
+          height.innerHTML = `height:${detail.height}`;
+          weight.innerHTML = `weight:${detail.weight}`;
+          
+          const moves = detail.moves;
+          const moveWrapper = document.querySelector('.move-wrapper');
+          const setaEsquerda = document.getElementById('seta-esquerda');
+          const setaDireita = document.getElementById('seta-direita');
+          let wrapperPosition = 0;
+          
+          setaEsquerda.addEventListener('click', () => {
+          	wrapperPosition = wrapperPosition - 50;
+            moveWrapper.style.left = `${wrapperPosition}px`
+          });
+          
+          setaDireita.addEventListener('click', () => {
+          	wrapperPosition = wrapperPosition + 50;
+            moveWrapper.style.left = `${wrapperPosition}px`
+          });
+          
+          console.log(moves);
+          
+          for (let j = 0; j < moves.length; j++) {
+          
+          	let moveContainer = document.createElement('div');
+            moveContainer.classList.add('move-cont');
+            
+            let currentMove = moves[j];
+            moveContainer.innerHTML = `${currentMove.move.name}`;
+            
+            moveWrapper.appendChild(moveContainer);
+            j++;
+          }
+          
+	      })
+	    })
+	  }
+    
+    
+	});
+
+    </script>
+  </body>
+</html>
